@@ -27,23 +27,43 @@ app.post("/webhooks/status", (req, res) => {
 app.post("/webhooks/send", (req, res) => {
   const body = req.body;
   console.log("sending message:", body);
-  nexmo.channel.send(
-    { type: "messenger", id: process.env.FB_RECIPIENT_ID },
-    { type: "messenger", id: process.env.FB_SENDER_ID },
-    {
-      content: {
-        type: "text",
-        text: body.message,
+  nexmo.dispatch.create(
+    "failover",
+    [
+      {
+        from: { type: "sms", number: process.env.FROM_NUMBER },
+        to: { type: "sms", number: process.env.TO_NUMBER },
+        message: {
+          content: {
+            type: "text",
+            text: body.message
+          }
+        },
+        failover: {
+          expiry_time: 180,
+          condition_status: "read"
+        }
       },
-    },
+      {
+        from: { type: "messenger", id: process.env.FB_SENDER_ID },
+        to: { type: "messenger", id: process.env.FB_RECIPIENT_ID },
+        message: {
+          content: {
+            type: "text",
+            text: body.message
+          }
+        }
+      }
+    ],
     (err, data) => {
       if (err) {
-        console.error(err);
+        console.error('There was an error', err);
       } else {
-        console.log(data);
+        console.log(data.dispatch_uuid);
       }
     }
   );
+
   res.sendStatus(204);
 });
 
