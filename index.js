@@ -49,8 +49,10 @@ app.post("/webhooks/send", (req, res) => {
         to: { type: "messenger", id: process.env.FB_RECIPIENT_ID },
         message: {
           content: {
-            type: "text",
-            text: body.message
+            type: "image",
+            image: {
+              url: "https://notes-app-uploads-hectorzelaya-dev.s3.amazonaws.com/Tu+paquete+esta%CC%81+listo!.jpg"
+            }
           }
         }
       }
